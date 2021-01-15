@@ -1,8 +1,14 @@
 package com.cos.person.web;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import javax.validation.Valid;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -48,7 +54,10 @@ public class UserController {
 	// x-www-form-urlencoded => request.getParameter()
 	// test/plain => @RequestBody 어노테이션 : 버퍼로 바로읽어줌
 	// application/json => @RequestBody 어노테이션 + 오브젝트로 받기
-	public CommonDto<String> save(@RequestBody JoinReqDto dto) {
+	public CommonDto<?> save(@Valid @RequestBody JoinReqDto dto, BindingResult bindingResult) {
+		
+		
+		
 		System.out.println("save");
 		System.out.println("JoinReqDto : "+dto);
 		userRepository.save(dto);
@@ -70,9 +79,10 @@ public class UserController {
 	
 	// http://localhost:8080/user/1
 	@PutMapping("/user/{id}")
-	public CommonDto update(@PathVariable int id, @RequestBody UpdateReqDto dto) {
+	public CommonDto update(@PathVariable int id, @Valid @RequestBody UpdateReqDto dto, BindingResult bindingResult) {
 		System.out.println("update");
 		userRepository.update(id, dto);
 		return new CommonDto<>(HttpStatus.OK.value());
+		
 	}
 }
