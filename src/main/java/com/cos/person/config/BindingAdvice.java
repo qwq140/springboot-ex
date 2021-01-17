@@ -10,6 +10,8 @@ import org.aspectj.lang.annotation.After;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.BindingResult;
@@ -18,11 +20,15 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import com.cos.person.domain.CommonDto;
-import com.sun.tools.sjavac.Log;
+
+import io.sentry.Sentry;
+
 
 @Aspect
 @Component
 public class BindingAdvice {
+	
+	private static final Logger log = LoggerFactory.getLogger(BindingAdvice.class);
 	
 	// 어떤함수가 언제 몇번 실행됐는지 횟수같은거 로그 남기기
 	@Before("execution(* com.cos.person.web..*Controller.*(..))")
@@ -61,7 +67,8 @@ public class BindingAdvice {
 					for(FieldError error : bindingResult.getFieldErrors()) {
 						errorMap.put(error.getField(), error.getDefaultMessage());
 						// 로그 레벨 error warn info debug
-						Log.warn(type+"."+method+"()=>필드 : "+error.getField()+", 메시지 : "+error.getDefaultMessage());
+						log.warn(type+"."+method+"()=>필드 : "+error.getField()+", 메시지 : "+error.getDefaultMessage());
+						Sentry.captureMessage(type+"."+method+"() => 필드 : "+error.getField()+", 메시지 : "+error.getDefaultMessage());
 					}
 					
 					return new CommonDto<>(HttpStatus.BAD_REQUEST.value(),errorMap);
